@@ -10,40 +10,44 @@ def write_price(price_dictionary,file_for_price):
     file_for_price.write("{}:{},{},{}\n".format(price_dictionary["price"],price_dictionary["aid"],price_dictionary["cat"],price_dictionary["loc"]))
 
 def write_term(term_dictionary, file_for_term):
-
-    alist = term_dictionary["ti"].split()
-    pattern = re.compile(r'[0-9a-zA-Z_-]')
     
-
+    pattern1 = re.compile(r'[0-9a-zA-Z_-]')
+    pattern2 = re.compile(r'&#[0-9]+;')
+    new_string = re.sub(pattern2,"",term_dictionary["ti"])
+    
+    alist = new_string.split()
     for iterm in alist:
-        if len(iterm) <= 2:
-            continue
-        
         chars = list(iterm)
-        for char in chars:
-            flag = re.match(pattern,char)
-            if not flag:
-                chars.pop(char)
+        for i,char in enumerate(chars):
+            flag = re.match(pattern1,char)
+            if flag == None:
+                chars[i] = ','
+
         iterm = "".join(chars)
-        iterm = iterm.lower()
-        file_for_term.write("{}:{}\n".format(iterm,term_dictionary["aid"]))
+        outputs = iterm.split(",")
+        for output in outputs:
+            if len(output) <= 2:
+                continue
+            output = output.lower()
+            file_for_term.write("{}:{}\n".format(output,term_dictionary["aid"]))
 
     
-    blist = term_dictionary["desc"].split()
+    new_string = re.sub(pattern2,"",term_dictionary["desc"])
+    blist = new_string.split()
     for iterm in blist:
-
-        if len(iterm) <= 2:
-            continue
-        
         chars = list(iterm)
-        for char in chars:
-            flag = re.match(pattern,char)
-            if not flag:
-                chars.pop(char)
+        for i,char in enumerate(chars):
+            flag = re.match(pattern1,char)
+            if flag == None:
+                chars[i] = ','
                 
-        iterm = "".join(chars)
-        iterm = iterm.lower()
-        file_for_term.write("{}:{}\n".format(iterm,term_dictionary["aid"]))
+        iterm = "".join(chars)        
+        outputs = iterm.split(",")
+        for output in outputs:
+            if len(output) <= 2:
+                continue
+            output = output.lower()
+            file_for_term.write("{}:{}\n".format(output,term_dictionary["aid"]))
 
     
 
@@ -72,7 +76,7 @@ def main():
             if child.tag in tags_for_term:
                 term_dictionary[child.tag] = child.text
         
-        #write_price(price_dictionary,file_for_price)
+        write_price(price_dictionary,file_for_price)
         write_term(term_dictionary,file_for_term)
         
 
