@@ -33,6 +33,7 @@ def write_term(term_dictionary, file_for_term):
 
     
     new_string = re.sub(pattern2,"",term_dictionary["desc"])
+    print(new_string)
     blist = new_string.split()
     for iterm in blist:
         chars = list(iterm)
@@ -79,7 +80,8 @@ def main():
         write_price(price_dictionary,file_for_price)
         write_term(term_dictionary,file_for_term)
         
-
+    file_for_price.close()
+    file_for_term.close()
 
 
 main()
