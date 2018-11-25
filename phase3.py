@@ -1,51 +1,82 @@
 from bsddb3 import db
 import  re
 
-def dateGreater(date,daCursor):
-    result = daCursor.set(date.encode("utf-8"))
+def pd_get_aid(info):
+    info = info.split(',')
+    return info[0]
+
+def get_title(aids,adCursor):
+    for aid in aids:
+        result = adCursor.set(aid.encode("utf-8"))
+        if(result != None):
+            ad = str(result[1].decode("utf-8"))
+            titleSearch = re.search('<ti>(.*)</ti>',ad)
+            title = titleSearch.group(1)
+            print(str(result[0].decode("utf-8")) + ": " + title)
+
+
+def dateGreater(date,daCursor,adCursor):
+    result = daCursor.set_range(date.encode("utf-8"))
+    d_aids = []
     if(result != None):
-        print("Key: " + str(result[0].decode("utf-8")) + ", Value: " + str(result[1].decode("utf-8")))
-        
-        dup = daCursor.next_dup()
-        while(dup != None):
-            print("key: " + str(dup[0].decode("utf-8")) + ", Value: " + str(dup[1].decode("utf-8")))
-            dup = daCursor.next_dup()
+        d_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
+        other = daCursor.next()
+        while(other != None):
+            if  pd_get_aid(str(other[1].decode("utf-8"))) not in d_aids:
+                d_aids.append(pd_get_aid(str(other[1].decode("utf-8"))))
+            other = daCursor.next()
+        get_title(d_aids,adCursor)
     else:
         print("No Entry Found.")
 
-def dateless(date,daCursor):
-    result = daCursor.set(date.encode("utf-8"))
+def dateless(date,daCursor,adCursor):
+    result = daCursor.set_range(date.encode("utf-8"))
+    d_aids = []
     if(result != None):
-        print("Key: " + str(result[0].decode("utf-8")) + ", Value: " + str(result[1].decode("utf-8")))
-        
+        d_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
         dup = daCursor.next_dup()
         while(dup != None):
-            print("key: " + str(dup[0].decode("utf-8")) + ", Value: " + str(dup[1].decode("utf-8")))
+            if  pd_get_aid(str(dup[1].decode("utf-8"))) not in d_aids:
+                d_aids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
             dup = daCursor.next_dup()
+        result = daCursor.set_range(date.encode("utf-8"))
+        prev = daCursor.prev()
+        while(prev != None):
+            if  pd_get_aid(str(prev[1].decode("utf-8"))) not in d_aids:
+                d_aids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
+            prev = daCursor.prev()
+        get_title(d_aids,adCursor)
+        return
     else:
         print("No Entry Found.")
     
-def teQuery(keyword,teCursor):
+def teQuery(keyword,teCursor,adCursor):
     result = teCursor.set(keyword.encode("utf-8")) 
+    te_aids = []
     if(result != None):
-        print("Key: " + str(result[0].decode("utf-8")) + ", Value: " + str(result[1].decode("utf-8")))
-        
+        te_aids.append(str(result[1].decode("utf-8")).split('\n')[0])
         dup = teCursor.next_dup()
         while(dup != None):
-            print("key: " + str(dup[0].decode("utf-8")) + ", Value: " + str(dup[1].decode("utf-8")))
+            if  str(dup[1].decode("utf-8")).split('\n')[0] not in te_aids:
+                te_aids.append(str(dup[1].decode("utf-8")).split('\n')[0])
             dup = teCursor.next_dup()
     else:
         print("No Entry Found.")
+    get_title(te_aids,adCursor)
 
-def queryType(query,teCursor,daCursor):
+
+def queryType(query,teCursor,daCursor,adCursor):
     dateLessQuery  = re.match('date<=(.*)',query)
     dateGreaterQuery = re.match('date>(.*)',query)
+    locationQuery = re.match('location=(.*)',query)
     if dateLessQuery:
-        dateless(dateLessQuery.group(1),daCursor)
+        dateless(dateLessQuery.group(1),daCursor,adCursor)
     elif dateGreaterQuery:
-        dateGreater(dateGreaterQuery.group(1),daCursor)
+        dateGreater(dateGreaterQuery.group(1),daCursor,adCursor)
+    if locationQuery:
+        location(locationQuery.group(1),daCursor,adCursor)
     else:
-        teQuery(query,teCursor)
+        teQuery(query,teCursor,adCursor)
 
 def main():
     adsDB = db.DB()
@@ -66,7 +97,7 @@ def main():
         querys = input("Enter query: ")
         querys = querys.split()
         for query in querys:
-            queryType(query,teCursor,daCursor)
+            queryType(query,teCursor,daCursor,adCursor)
     
     adsDB.close()
     termsDB.close()
