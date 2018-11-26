@@ -244,6 +244,7 @@ def priceLessEqual(price,prCursor,adCursor,opt):
     return p_aids    
 
 def teQuery(keyword,teCursor,adCursor,opt):
+    keyword = keyword.lower()
     result = teCursor.set(keyword.encode("utf-8")) 
     te_aids = []
     if(result != None):
