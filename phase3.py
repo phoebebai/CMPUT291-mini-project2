@@ -105,7 +105,7 @@ def dateGreater(date,daCursor,adCursor,opt):
             top = daCursor.next()
     return d_aids
 
-def datelessequal(date,daCursor,adCursor,opt):
+def dateLessEqual(date,daCursor,adCursor,opt):
     result = daCursor.set(date.encode("utf-8"))
     d_aids = []
     if(result != None):
@@ -134,50 +134,114 @@ def datelessequal(date,daCursor,adCursor,opt):
             top = daCursor.next()
     return d_aids    
 
-def priceless(price,curs,adCursor,opt):
-
-    result = curs.set(price.encode("utf-8"))
-    priceids = []
+def priceLess(price,prCursor,adCursor,opt):
+    result = prCursor.set_range(price.encode("utf-8"))
+    p_aids = []
     if(result != None):
-        prev = curs.prev()
-        while prev != None:
-            if  pd_get_aid(str(prev[1].decode("utf-8"))) not in priceids:
-                priceids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
-            prev = curs.prev()
-        return priceids
+        prev = prCursor.prev()
+        while(prev != None):
+            if  pd_get_aid(str(prev[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
+            prev = prCursor.prev()
+        return p_aids
     else:
-        print("No price was found")
+        print("No Entry Found.")
 
-def pricegreater(price,curs,adCursor,opt):
-
-    result = curs.set_range(price.encode("utf-8"))
-    priceids = []
-    if(result != None):
-        dup = curs.next_dup()
-        while(dup != None):
-            dup = curs.next_dup()
-        result = curs.next()
-        while(result != None):
-            if  pd_get_aid(str(result[1].decode("utf-8"))) not in priceids:
-                priceids.append(pd_get_aid(str(result[1].decode("utf-8"))))
-            result = curs.next()
-        return priceids
-    else:
-        print("No price was found")
-
-def priceequal(price,prCursor,adCursor,opt):
+def priceGreater(price,prCursor,adCursor,opt):
     result = prCursor.set(price.encode("utf-8"))
-    priceids = []
+    p_aids = []
     if(result != None):
-        priceids.append(pd_get_aid(str(result[1].decode("utf-8"))))
         dup = prCursor.next_dup()
         while(dup != None):
-            if  pd_get_aid(str(dup[1].decode("utf-8"))) not in priceids:
-                priceids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
-            dup = prCursor.next_dup()   
-        return priceids
+            dup = prCursor.next_dup()
+        other = prCursor.next()
+        while(other != None):
+            if  pd_get_aid(str(other[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(other[1].decode("utf-8"))))
+            other = prCursor.next()
     else:
-        print("No price was found")
+        top = prCursor.first()
+        while(top != None):
+            othprice = str(top[0].decode("utf-8"))
+            if (othprice > price):
+                break
+            top = prCursor.next()
+        while(top != None):
+            if  pd_get_aid(str(top[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(top[1].decode("utf-8"))))
+            top = prCursor.next()
+    return p_aids
+
+def priceEqual(price,prCursor,adCursor,opt):
+    result = prCursor.set(price.encode("utf-8"))
+    p_aids = []
+    if(result != None):
+        p_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
+        dup = prCursor.next_dup()
+        while(dup != None):
+            if  pd_get_aid(str(dup[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
+            dup = prCursor.next_dup()
+        return p_aids   
+    else:
+        print("No Entry found")
+
+def priceGreaterEqual(price,prCursor,adCursor,opt):
+    result = prCursor.set(price.encode("utf-8"))
+    p_aids = []
+    if(result != None):
+        p_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
+        dup = prCursor.next_dup()
+        while(dup != None):
+            if  pd_get_aid(str(dup[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
+            dup = prCursor.next_dup()
+        result = prCursor.set_range(price.encode("utf-8"))
+        other = prCursor.next()
+        while(other != None):
+            if  pd_get_aid(str(other[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(other[1].decode("utf-8"))))
+            other = prCursor.next()  
+    else:
+        top = prCursor.first()
+        while(top != None):
+            othprice = str(top[0].decode("utf-8"))
+            if othprice > price:
+                break
+            top = prCursor.next()
+        while(top != None):
+            if  pd_get_aid(str(top[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(top[1].decode("utf-8"))))
+            top = prCursor.next()
+    return p_aids
+
+def priceLessEqual(price,prCursor,adCursor,opt):
+    result = prCursor.set(price.encode("utf-8"))
+    p_aids = []
+    if(result != None):
+        p_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
+        dup = prCursor.next_dup()
+        while(dup != None):
+            if  pd_get_aid(str(dup[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
+            dup = prCursor.next_dup()
+        result = prCursor.set_range(price.encode("utf-8"))
+        prev = prCursor.prev()
+        while(prev != None):
+            if  pd_get_aid(str(prev[1].decode("utf-8"))) not in p_aids:
+                p_aids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
+            prev = prCursor.prev()
+    else:
+        top = prCursor.first()
+        while(top != None):
+            othprice = str(top[0].decode("utf-8"))
+            if othprice > price:
+                break
+            else:
+                if  pd_get_aid(str(top[1].decode("utf-8"))) not in p_aids:
+                    p_aids.append(pd_get_aid(str(top[1].decode("utf-8"))))
+            top = prCursor.next()
+    return p_aids    
 
 def teQuery(keyword,teCursor,adCursor,opt):
     result = teCursor.set(keyword.encode("utf-8")) 
@@ -219,7 +283,22 @@ def cat(ca,adCursor,opt):
         top = adCursor.next()
     return ca_aids
 
+def part(pte,teCursor,adCursor,opt):
+    pte = pte.lower()
+    top = teCursor.first()
+    pt_aids = []
+    while (top != None):
+        te = str(top[0].decode("utf-8"))
+        pmatch = re.search(str(pte)+'(.*)',te)
+        if pmatch:
+            if  str(top[1].decode("utf-8")).split('\n')[0] not in pt_aids:
+                pt_aids.append(str(top[1].decode("utf-8")).split('\n')[0])
+        top = teCursor.next()
+    return pt_aids
+
+
 def queryType(query,teCursor,daCursor,adCursor,prCursor,opt):
+    partQuery = re.match('(.*)%',query)
     dateGreaterEqualQuery = re.match('date>=(.*)',query)
     dateLessEqualQuery  = re.match('date<=(.*)',query)
     dateGreaterQuery = re.match('date>(.*)',query)
@@ -228,10 +307,12 @@ def queryType(query,teCursor,daCursor,adCursor,prCursor,opt):
     locationQuery = re.match('location=(.*)',query)
     catQuery = re.match('cat=(.*)',query)
     priceEqualQuery = re.match('price=(.*)',query)
+    priceGreaterEqualQuery = re.match('price>=(.*)',query)
+    priceLessEqualQuery  = re.match('price<=(.*)',query)
     priceGreaterQuery = re.match('price>(.*)',query)
     priceLessQuery = re.match('price<(.*)',query)
     if dateLessEqualQuery:
-        return datelessequal(dateLessEqualQuery.group(1),daCursor,adCursor,opt)
+        return dateLessEqual(dateLessEqualQuery.group(1),daCursor,adCursor,opt)
     elif dateEqualQuery:
         return dateEqual(dateEqualQuery.group(1),daCursor,adCursor,opt)
     elif dateGreaterEqualQuery:
@@ -245,11 +326,17 @@ def queryType(query,teCursor,daCursor,adCursor,prCursor,opt):
     elif locationQuery:
         return location(locationQuery.group(1),adCursor,opt)
     elif priceEqualQuery:
-        return priceequal(priceEqualQuery.group(1),prCursor,adCursor,opt)
+        return priceEqual(priceEqualQuery.group(1),prCursor,adCursor,opt)
+    elif priceGreaterEqualQuery:
+        return priceGreaterEqual(priceGreaterEqualQuery.group(1),prCursor,adCursor,opt)
+    elif priceLessEqualQuery:
+        return priceLessEqual(priceLessEqualQuery.group(1),daCursor,adCursor,opt)
     elif priceGreaterQuery:
-        return pricegreater(priceGreaterQuery.group(1),prCursor,adCursor,opt)
+        return priceGreater(priceGreaterQuery.group(1),prCursor,adCursor,opt)
     elif priceLessQuery:
-        return priceless(priceLessQuery.group(1),prCursor,adCursor,opt)
+        return priceLess(priceLessQuery.group(1),prCursor,adCursor,opt)
+    elif partQuery:
+        return part(partQuery.group(1),teCursor,adCursor,opt)
     else:
         return teQuery(query,teCursor,adCursor,opt)
 
@@ -284,22 +371,33 @@ def main():
         else:
             querys = querys.split()
             entries = []
+            tr = 0
             for query in querys:
-                entries.append(queryType(query,teCursor,daCursor,adCursor,prCursor,opt))
-            final_entries = []
-            for i in range(len(entries)):
-                for j in range(len(entries[i])):
-                    ein = 1
-                    for e in entries:
-                        if entries[i][j] not in e:
-                            ein = 0
-                            break
-                    if ein == 1:
-                        final_entries.append(entries[i][j])
-            if opt == 0:
-                get_title(final_entries,adCursor)
-            elif opt == 1:
-                get_ad(final_entries,adCursor)
+                if queryType(query,teCursor,daCursor,adCursor,prCursor,opt) != None:
+                    entries.append(queryType(query,teCursor,daCursor,adCursor,prCursor,opt))
+                else:
+                    print("no matching entries")
+                    tr = 1
+                    break
+            if tr == 0:
+                if len(entries) != 0:
+                    final_entries = []
+                    for i in range(len(entries)):
+                        for j in range(len(entries[i])):
+                            ein = 1
+                            for e in entries:
+                                if entries[i][j] not in e:
+                                    ein = 0
+                                    break
+                            if ein == 1:
+                                if entries[i][j] not in final_entries:
+                                    final_entries.append(entries[i][j])
+                    if opt == 0:
+                        get_title(final_entries,adCursor)
+                    elif opt == 1:
+                        get_ad(final_entries,adCursor)
+                else:
+                    print("no matching entries")
 
 
     
