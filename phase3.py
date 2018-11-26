@@ -32,10 +32,6 @@ def dateEqual(date,daCursor,adCursor,opt):
             if  pd_get_aid(str(dup[1].decode("utf-8"))) not in d_aids:
                 d_aids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
             dup = daCursor.next_dup()
-        if opt == 0:
-            get_title(d_aids,adCursor)
-        elif opt == 1:
-            get_ad(d_aids,adCursor) 
         return d_aids   
     else:
         print("No Entry found")
@@ -55,14 +51,20 @@ def dateGreaterEqual(date,daCursor,adCursor,opt):
         while(other != None):
             if  pd_get_aid(str(other[1].decode("utf-8"))) not in d_aids:
                 d_aids.append(pd_get_aid(str(other[1].decode("utf-8"))))
-            other = daCursor.next()
-        if opt == 0:
-            get_title(d_aids,adCursor)
-        elif opt == 1:
-            get_ad(d_aids,adCursor)   
-        return d_aids    
+            other = daCursor.next()  
     else:
-        print("No Entry found")
+        top = daCursor.first()
+        while(top != None):
+            newdate = time.strptime(date, "%Y/%m/%d")
+            othdate = time.strptime(str(top[0].decode("utf-8")), "%Y/%m/%d")
+            if othdate > newdate:
+                break
+            top = daCursor.next()
+        while(top != None):
+            if  pd_get_aid(str(top[1].decode("utf-8"))) not in d_aids:
+                d_aids.append(pd_get_aid(str(top[1].decode("utf-8"))))
+            top = daCursor.next()
+    return d_aids
 
 def dateLess(date,daCursor,adCursor,opt):
     result = daCursor.set_range(date.encode("utf-8"))
@@ -73,10 +75,6 @@ def dateLess(date,daCursor,adCursor,opt):
             if  pd_get_aid(str(prev[1].decode("utf-8"))) not in d_aids:
                 d_aids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
             prev = daCursor.prev()
-        if opt == 0:
-            get_title(d_aids,adCursor)
-        elif opt == 1:
-            get_ad(d_aids,adCursor)
         return d_aids
     else:
         print("No Entry Found.")
@@ -105,14 +103,10 @@ def dateGreater(date,daCursor,adCursor,opt):
             if  pd_get_aid(str(top[1].decode("utf-8"))) not in d_aids:
                 d_aids.append(pd_get_aid(str(top[1].decode("utf-8"))))
             top = daCursor.next()
-    if opt == 0:
-        get_title(d_aids,adCursor)
-    elif opt == 1:
-        get_ad(d_aids,adCursor)
     return d_aids
 
 def datelessequal(date,daCursor,adCursor,opt):
-    result = daCursor.set_range(date.encode("utf-8"))
+    result = daCursor.set(date.encode("utf-8"))
     d_aids = []
     if(result != None):
         d_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
@@ -127,13 +121,18 @@ def datelessequal(date,daCursor,adCursor,opt):
             if  pd_get_aid(str(prev[1].decode("utf-8"))) not in d_aids:
                 d_aids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
             prev = daCursor.prev()
-        if opt == 0:
-            get_title(d_aids,adCursor)
-        elif opt == 1:
-            get_ad(d_aids,adCursor)
-        return d_aids
     else:
-        print("No Entry Found.")
+        top = daCursor.first()
+        while(top != None):
+            newdate = time.strptime(date, "%Y/%m/%d")
+            othdate = time.strptime(str(top[0].decode("utf-8")), "%Y/%m/%d")
+            if othdate > newdate:
+                break
+            else:
+                if  pd_get_aid(str(top[1].decode("utf-8"))) not in d_aids:
+                    d_aids.append(pd_get_aid(str(top[1].decode("utf-8"))))
+            top = daCursor.next()
+    return d_aids    
 
 def priceless(price,curs,adCursor,opt):
 
@@ -145,10 +144,6 @@ def priceless(price,curs,adCursor,opt):
             if  pd_get_aid(str(prev[1].decode("utf-8"))) not in priceids:
                 priceids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
             prev = curs.prev()
-        if opt == 0:
-            get_title(priceids,adCursor)
-        elif opt == 1:
-            get_ad(priceids,adCursor)
         return priceids
     else:
         print("No price was found")
@@ -166,10 +161,6 @@ def pricegreater(price,curs,adCursor,opt):
             if  pd_get_aid(str(result[1].decode("utf-8"))) not in priceids:
                 priceids.append(pd_get_aid(str(result[1].decode("utf-8"))))
             result = curs.next()
-        if opt == 0:
-            get_title(priceids,adCursor)
-        elif opt == 1:
-            get_ad(priceids,adCursor)
         return priceids
     else:
         print("No price was found")
@@ -184,10 +175,6 @@ def priceequal(price,prCursor,adCursor,opt):
             if  pd_get_aid(str(dup[1].decode("utf-8"))) not in priceids:
                 priceids.append(pd_get_aid(str(dup[1].decode("utf-8"))))
             dup = prCursor.next_dup()   
-        if opt == 0:
-            get_title(priceids,adCursor)
-        elif opt == 1:
-            get_ad(priceids,adCursor)
         return priceids
     else:
         print("No price was found")
@@ -202,10 +189,6 @@ def teQuery(keyword,teCursor,adCursor,opt):
             if  str(dup[1].decode("utf-8")).split('\n')[0] not in te_aids:
                 te_aids.append(str(dup[1].decode("utf-8")).split('\n')[0])
             dup = teCursor.next_dup()
-        if opt == 0:
-            get_title(te_aids,adCursor)
-        elif opt == 1:
-            get_ad(te_aids,adCursor)
         return te_aids
     else:
         print("No Entry Found.")
@@ -221,10 +204,6 @@ def location(loca,adCursor,opt):
         if (loc.lower() == loca):
             loc_aids.append(top[0].decode("utf-8"))
         top = adCursor.next()
-    if opt == 0:
-        get_title(loc_aids,adCursor)
-    elif opt == 1:
-        get_ad(loc_aids,adCursor)
     return loc_aids
 
 def cat(ca,adCursor,opt):
@@ -238,10 +217,6 @@ def cat(ca,adCursor,opt):
         if (cat == ca):
             ca_aids.append(top[0].decode("utf-8"))
         top = adCursor.next()
-    if opt == 0:
-        get_title(ca_aids,adCursor)
-    elif opt == 1:
-        get_ad(ca_aids,adCursor)
     return ca_aids
 
 def queryType(query,teCursor,daCursor,adCursor,prCursor,opt):
