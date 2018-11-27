@@ -1,6 +1,6 @@
 import os
-os.system("chmod u+x break.pl ")
-os.system("sort -n < ads.txt  | db_load -T -t hash ad.idx")
-os.system("sort -n < terms.txt | ./break.pl | db_load -T -t btree te.idx")
-os.system("sort -n < pdates.txt | ./break.pl | db_load -T -t btree da.idx")
-os.system("sort -n < prices.txt | ./break.pl | db_load -T -t btree pr.idx")
+
+os.system("sort  < ads.txt  | ./break.pl | db_load -c duplicates=1 -T -t hash ad.idx")
+os.system("sort -u < terms.txt | ./break.pl | db_load -c duplicates=1 -T -t btree te.idx")
+os.system("sort -u < pdates.txt | ./break.pl | db_load -c duplicates=1 -T -t btree da.idx")
+os.system("sort < prices.txt | ./break.pl | db_load -c duplicates=1 -T -t btree pr.idx")

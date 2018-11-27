@@ -135,19 +135,23 @@ def dateLessEqual(date,daCursor,adCursor,opt):
     return d_aids    
 
 def priceLess(price,prCursor,adCursor,opt):
-    result = prCursor.set_range(price.encode("utf-8"))
+    stop_price = ("{:>20}".format(price))
+    curs = prCursor.first()
     p_aids = []
-    if(result != None):
-        prev = prCursor.prev()
-        while(prev != None):
-            if  pd_get_aid(str(prev[1].decode("utf-8"))) not in p_aids:
-                p_aids.append(pd_get_aid(str(prev[1].decode("utf-8"))))
-            prev = prCursor.prev()
-        return p_aids
-    else:
-        print("No Entry Found.")
+    
+    
+    if(curs != None): 
+        while( curs!= None):
+            if curs[0].decode("utf-8") >= stop_price:
+               break
+            else:
+                if  pd_get_aid(str(curs[1].decode("utf-8"))) not in p_aids:
+                    p_aids.append(pd_get_aid(str(curs[1].decode("utf-8"))))
+            curs = prCursor.next()
+        return p_aids   
 
 def priceGreater(price,prCursor,adCursor,opt):
+    price = ("{:>20}".format(price))
     result = prCursor.set(price.encode("utf-8"))
     p_aids = []
     if(result != None):
@@ -173,6 +177,7 @@ def priceGreater(price,prCursor,adCursor,opt):
     return p_aids
 
 def priceEqual(price,prCursor,adCursor,opt):
+    price = ("{:>20}".format(price))
     result = prCursor.set(price.encode("utf-8"))
     p_aids = []
     if(result != None):
@@ -184,9 +189,10 @@ def priceEqual(price,prCursor,adCursor,opt):
             dup = prCursor.next_dup()
         return p_aids   
     else:
-        print("No Entry found")
+       return p_aids
 
 def priceGreaterEqual(price,prCursor,adCursor,opt):
+    price = ("{:>20}".format(price))
     result = prCursor.set(price.encode("utf-8"))
     p_aids = []
     if(result != None):
@@ -216,7 +222,10 @@ def priceGreaterEqual(price,prCursor,adCursor,opt):
     return p_aids
 
 def priceLessEqual(price,prCursor,adCursor,opt):
+    
+    price = ("{:>20}".format(price))
     result = prCursor.set(price.encode("utf-8"))
+    
     p_aids = []
     if(result != None):
         p_aids.append(pd_get_aid(str(result[1].decode("utf-8"))))
@@ -234,7 +243,7 @@ def priceLessEqual(price,prCursor,adCursor,opt):
     else:
         top = prCursor.first()
         while(top != None):
-            othprice = str(top[0].decode("utf-8"))
+            othprice = ("{:>20}".format(str(top[0].decode("utf-8"))))
             if othprice > price:
                 break
             else:
@@ -244,7 +253,6 @@ def priceLessEqual(price,prCursor,adCursor,opt):
     return p_aids    
 
 def teQuery(keyword,teCursor,adCursor,opt):
-    keyword = keyword.lower()
     result = teCursor.set(keyword.encode("utf-8")) 
     te_aids = []
     if(result != None):
@@ -312,6 +320,7 @@ def queryType(query,teCursor,daCursor,adCursor,prCursor,opt):
     priceLessEqualQuery  = re.match('price<=(.*)',query)
     priceGreaterQuery = re.match('price>(.*)',query)
     priceLessQuery = re.match('price<(.*)',query)
+    
     if dateLessEqualQuery:
         return dateLessEqual(dateLessEqualQuery.group(1),daCursor,adCursor,opt)
     elif dateEqualQuery:
@@ -322,20 +331,24 @@ def queryType(query,teCursor,daCursor,adCursor,prCursor,opt):
         return dateLess(dateLessQuery.group(1),daCursor,adCursor,opt)
     elif dateGreaterQuery:
         return dateGreater(dateGreaterQuery.group(1),daCursor,adCursor,opt)
+    
     elif catQuery:
         return cat(catQuery.group(1),adCursor,opt)
+    
     elif locationQuery:
         return location(locationQuery.group(1),adCursor,opt)
+    
     elif priceEqualQuery:
         return priceEqual(priceEqualQuery.group(1),prCursor,adCursor,opt)
     elif priceGreaterEqualQuery:
         return priceGreaterEqual(priceGreaterEqualQuery.group(1),prCursor,adCursor,opt)
     elif priceLessEqualQuery:
-        return priceLessEqual(priceLessEqualQuery.group(1),daCursor,adCursor,opt)
+        return priceLessEqual(priceLessEqualQuery.group(1),prCursor,adCursor,opt)
     elif priceGreaterQuery:
         return priceGreater(priceGreaterQuery.group(1),prCursor,adCursor,opt)
     elif priceLessQuery:
         return priceLess(priceLessQuery.group(1),prCursor,adCursor,opt)
+    
     elif partQuery:
         return part(partQuery.group(1),teCursor,adCursor,opt)
     else:
@@ -357,55 +370,58 @@ def main():
     prCursor = pricesDB.cursor()
 
     opt = 0
-
+    
     while(True):
-        querys = input("Enter query: ")
+        querys = input("Enter query: ") 
+        
         outSearch = re.search('output=(.*)',querys)
         if outSearch:
-            option = outSearch.group(1)
-            if option == "full":
-                opt = 1
-            elif option == "brief":
+           option = outSearch.group(1)
+           if option == "full":
+              opt = 1
+           elif option == "brief":
                 opt = 0
-            else:
+           else:
                 print("invalid option")
+                break
         else:
-            querys = querys.split()
-            entries = []
-            tr = 0
-            for query in querys:
-                if queryType(query,teCursor,daCursor,adCursor,prCursor,opt) != None:
+             querys = querys.split()
+             entries = []
+             tr = 0
+             for query in querys:
+                 query = query.lower()
+                 if (queryType(query,teCursor,daCursor,adCursor,prCursor,opt) != []) and (queryType(query,teCursor,daCursor,adCursor,prCursor,opt) != None):
                     entries.append(queryType(query,teCursor,daCursor,adCursor,prCursor,opt))
-                else:
+                 else:
                     print("no matching entries")
                     tr = 1
                     break
-            if tr == 0:
+
+             if tr == 0:
                 if len(entries) != 0:
-                    final_entries = []
-                    for i in range(len(entries)):
-                        for j in range(len(entries[i])):
-                            ein = 1
-                            for e in entries:
-                                if entries[i][j] not in e:
-                                    ein = 0
-                                    break
-                            if ein == 1:
-                                if entries[i][j] not in final_entries:
-                                    final_entries.append(entries[i][j])
-                    if opt == 0:
-                        get_title(final_entries,adCursor)
-                    elif opt == 1:
-                        get_ad(final_entries,adCursor)
-                else:
-                    print("no matching entries")
+                   final_entries = []
+                   for i in range(len(entries)):
+                       for j in range(len(entries[i])):
+                           ein = 1
+                           for e in entries:
+                               if entries[i][j] not in e:
+                                  ein = 0
+                                  break
+                           if ein == 1:
+                              if entries[i][j] not in final_entries:
+                                 final_entries.append(entries[i][j])
+                if opt == 0:
+                    get_title(final_entries,adCursor)
+                elif opt == 1:
+                    get_ad(final_entries,adCursor)
+                
 
 
     
     adsDB.close()
     termsDB.close()
     pdatesDB.close()
-    priceDB.close()
+    pricesDB.close()
     adCursor.close()
     teCursor.close()
     daCursor.close()
@@ -413,3 +429,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+       

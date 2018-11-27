@@ -7,7 +7,7 @@ def write_price(price_dictionary,file_for_price):
     if "price" not in price_dictionary:
         return
     
-    file_for_price.write("{}:{},{},{}\n".format(price_dictionary["price"],price_dictionary["aid"],price_dictionary["cat"],price_dictionary["loc"]))
+    file_for_price.write("{:>20}:{},{},{}\n".format(price_dictionary["price"],price_dictionary["aid"],price_dictionary["cat"],price_dictionary["loc"]))
 
 def write_term(term_dictionary, file_for_term):
     
@@ -33,7 +33,7 @@ def write_term(term_dictionary, file_for_term):
 
     
     new_string = re.sub(pattern2,"",term_dictionary["desc"])
-    print(new_string)
+
     blist = new_string.split()
     for iterm in blist:
         chars = list(iterm)
